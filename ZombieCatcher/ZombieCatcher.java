@@ -104,15 +104,14 @@ public class ZombieCatcher {
 
         int quarantineCount;
 
-	      // Check if files provided in cmd arguments
+        // Check if files provided in cmd arguments
         if (args.length > 0) {
-		        // File entry
+            // File entry
             quarantineCount = processFiles(args, infectionStart, infectionEnd);
         } else {
-		        // Manual entry
+            // Manual entry
             quarantineCount = getVisitors(infectionStart, infectionEnd);
         }
-
         System.out.println("Number of potential zombies: " + quarantineCount);
     }
 }
