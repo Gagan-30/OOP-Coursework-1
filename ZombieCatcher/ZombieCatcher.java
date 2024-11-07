@@ -4,38 +4,36 @@ import java.util.Scanner;
 
 public class ZombieCatcher {
 
-    // Existing overlappingPeriods method
+    // Check if two time periods overlap
     public static boolean overlappingPeriods(int start1, int end1, int start2, int end2) {
-        return start1 < end2 && start2 < end1;
+        return start1 < end2 && start2 < end1; // Check if time intervals overlap
     }
     
+    // Handle day/night period overlap
     public static boolean overlappingDayAndNightPeriods(int start1, int end1, int start2, int end2) {
-      // Case 1: Both periods do not cross midnight
+      // Case where both periods dont cross midnight
       if (end1 > start1 && end2 > start2) {
           return start1 < end2 && start2 < end1;
       }
   
-      // Adjust periods that cross midnight by adding 24 to the end time if needed
+      // Adjust for periods crossing midnight by adding 24 hrs to end time
       int adjustedEnd1 = (end1 > start1) ? end1 : end1 + 24;
       int adjustedEnd2 = (end2 > start2) ? end2 : end2 + 24;
       
-      // Adjusted start times remain the same
       int adjustedStart1 = start1;
       int adjustedStart2 = start2;
 
-      // Case 2: One or both periods cross midnight
       return (adjustedStart1 < adjustedEnd2 && adjustedStart2 < adjustedEnd1);
     }
 
-
-    // Existing getVisitors method for manual entry (used if no files are provided)
+    // Manually input visitor data, check infection period overlap
     public static int getVisitors(int infectionStart, int infectionEnd) {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Enter the number of visitors:");
         int visitorCount = scanner.nextInt();
-        scanner.nextLine(); // Consume newline
+        scanner.nextLine(); 
 
-        int quarantineCount = 0;
+	int quarantineCount = 0;
         for (int i = 0; i < visitorCount; i++) {
             System.out.println("Enter the visitor's name:");
             String name = scanner.nextLine();
@@ -43,8 +41,9 @@ public class ZombieCatcher {
             int arrival = scanner.nextInt();
             System.out.println("Enter the departure time:");
             int departure = scanner.nextInt();
-            scanner.nextLine(); // Consume newline
+            scanner.nextLine();
 
+	    // Check infection period overlap
             if (overlappingPeriods(arrival, departure, infectionStart, infectionEnd)) {
                 System.out.println(name + " needs to be quarantined.");
                 quarantineCount++;
@@ -55,42 +54,47 @@ public class ZombieCatcher {
         return quarantineCount;
     }
 
-    // New method to handle file input
+    // Process visitor data files
     public static int processFiles(String[] files, int infectionStart, int infectionEnd) {
-        int quarantineCount = 0;
+    	int quarantineCount = 0;
 
-        for (String filename : files) {
-            File file = new File(filename);
-            if (!file.exists()) {
-                System.out.println("WARNING: " + filename + " not found.");
-                continue;
-            }
+    	for (String filename : files) {
+        	File file = new File(filename);
+        	if (!file.exists()) {
+            		System.out.println("WARNING: " + filename + " not found.");
+            		continue; // skip if no file
+        	}
 
-            try (Scanner fileScanner = new Scanner(file)) {
-                while (fileScanner.hasNextLine()) {
-                    String line = fileScanner.nextLine();
-                    String[] parts = line.split(" ");
-                    if (parts.length != 3) continue;  // Skip malformed lines
+        	//System.out.println("Processing file: " + filename);  // Verify if the file is being processed
 
-                    String name = parts[0];
-                    int arrival = Integer.parseInt(parts[1]);
-                    int departure = Integer.parseInt(parts[2]);
+        	try (Scanner fileScanner = new Scanner(file)) { 
+            		while (fileScanner.hasNextLine()) { // Read each line of file
+                		String line = fileScanner.nextLine();
+                		//System.out.println("Reading line: " + line);  // Debugging line to see what data is being read
 
-                    if (overlappingPeriods(arrival, departure, infectionStart, infectionEnd)) {
-                        System.out.println(name + " needs to be quarantined.");
-                        quarantineCount++;
-                    }
-                }
-            } catch (FileNotFoundException e) {
-                System.out.println("WARNING: " + filename + " not found.");
-            }
-        }
+                		String[] parts = line.split(" "); // Split line 
+                		if (parts.length != 3) continue;
 
-        return quarantineCount;
-    }
+                		String name = parts[0]; // Extract name
+                		int arrival = Integer.parseInt(parts[1]); // Extract arrival time
+                		int departure = Integer.parseInt(parts[2]); // Extract departure time
 
-    // Main method to handle either file-based or manual entry
-    public static void main(String[] args) {
+		            	// Check infection period overlap
+                		if (overlappingPeriods(arrival, departure, infectionStart, infectionEnd)) {
+                    			System.out.println(name + " needs to be quarantined.");
+                    			quarantineCount++;
+                		}
+            		}
+        	} catch (FileNotFoundException e) { // Handle file not found 
+            		System.out.println("WARNING: " + filename + " not found.");
+        	}
+    	}
+
+    	return quarantineCount;
+   }
+
+   // Handle manual entry or file based
+   public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         
         System.out.println("Enter the start time:");
@@ -99,15 +103,16 @@ public class ZombieCatcher {
         int infectionEnd = scanner.nextInt();
 
         int quarantineCount;
+
+	      // Check if files provided in cmd arguments
         if (args.length > 0) {
-            // Process files if provided in command-line arguments
+		        // File entry
             quarantineCount = processFiles(args, infectionStart, infectionEnd);
         } else {
-            // Fallback to manual entry
+		        // Manual entry
             quarantineCount = getVisitors(infectionStart, infectionEnd);
         }
 
         System.out.println("Number of potential zombies: " + quarantineCount);
     }
 }
-
